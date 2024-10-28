@@ -1,0 +1,150 @@
+---
+title: "Exploración de datos sobre Migraña"
+author: "Ivan Cruz"
+output:
+  html_document:
+    df_print: paged 
+    toc : true
+    toc_float: 
+      collapsed: false
+    number_sections: true 
+    theme: cosmo  
+---
+
+```{r}
+library(dplyr)
+library(tidyverse)
+```
+
+
+## Introducción:
+
+La migraña o dolor de cabeza es uno de los síntomas más frecuentes que ven los neurólogos. Es una enfermadad muy común en la población general. Un estudio reveló que más del 90% de la población sufre de dolores de cabeza <b>[1]</b>.
+
+
+Los trastornos de cefalea primaria son más prevalentes en las personas a nivel mundial, mientras que la tasa activa estimada de cefaleas por tensión y migraña es aproximadamente del 40% y del 10%, respectivamente. Por otro lado, la cefalea en racimos, también conocida como cefalea autonómica trigeminal, es esporádica en comparación con las cefaleas por tensión y las migrañas, donde su ocurrencia en la población es cercana al 0.1% <b>[1]</b>.
+
+## Contexto del problema
+
+Para una comprension más detallada ver el `video aquí`: <img src="img/play.png"> [https://www.youtube.com/watch?v=COx-2Zk6cFQ](https://www.youtube.com/watch?v=COx-2Zk6cFQ){target="_blank"}.
+
+![Ver Videó:](img/contexto.png)
+
+
+## Dataset
+
+Fuente del dataset: [https://www.kaggle.com/datasets/ukveteran/treatment-of-migraine-headaches/data](https://www.kaggle.com/datasets/ukveteran/treatment-of-migraine-headaches/data){target="_blank"}.
+
+
+```{r}
+# Carga de datos del archivo csv
+ #file.choose()
+bd_mcabeza=read.csv("KosteckiDillon.csv")
+bd_mcabeza
+```
+
+
+Caracteristicas del dataset
+
+```{r}
+# Columnas de la BD - La función colnames() permite ver el nombre de las columnas
+colnames(bd_mcabeza)
+
+# Tamaño asociado: función dim()
+dim(bd_mcabeza)
+
+```
+
+El dataset contiene registros de estudio de 133 pacientes.
+
+<b>NOTA:</b> la columna `x` se eliminará dado que es valor de conteo.
+
+```{r}
+bd_mcabeza <- bd_mcabeza %>% select(-X)
+colnames(bd_mcabeza)
+```
+
+## Exploración de los datos
+
+Verificamos la población de la muestra entre hombre y mujeres.
+
+```{r}
+
+ ggplot(bd_mcabeza, aes(x = sex)) + geom_bar()
+```
+
+Los estudios muestran que las mujeres experimentan ataques de migraña con mayor frecuencia que los hombres. Si graficamos los datos podemos verificar que dicha información tambien esta presente en el dataset usado <b>[2][3]</b>.
+
+```{r}
+bd_mcabeza %>% 
+  ggplot(aes(x = sex,fill = hatype)) +
+  geom_bar()
+```
+
+## Pacientes con dolor con Aura
+
+```{r}
+# Filtrar solo los datos que presentan Aura antes del ataque de migraña
+df_aura <- bd_mcabeza %>%
+  filter(hatype == "Aura")
+```
+
+pacientes que presentan dolor durante el aura.
+
+```{r}
+# Dosis de pacientes por edad que tienen dolor durante el Aura
+ggplot(df_aura, aes(x = age, y =dos, color=headache)) +
+  geom_smooth() +  
+ # geom_point() +  # Puntos 
+  labs(title = "AURA: Curva de Edad por dosis ante presencia de dolor",
+       x = "Edad",
+       y = "Dosis") + 
+  scale_color_manual(values = c("yes" = "red", "no" = "#00CED1")) 
+```
+
+Del gráfico filtrado del dataset podemos concluir:
+
+<ul>
+<li>Entre 20 y 30 años: el Aura se presenta en su mayoria con dolor, en algunos casos esto podría deberse motivos geneticos o a factores externos tales como alimentación, pocas horas de sueño y el ritmo de vida.</li>
+<li>Entre 30 y 40 años: el Aura se les presenta en su mayoria con ausencia de dolor.</li>
+<li>Entre 40 y 50 años: el Aura se presenta casi en la misma proporcion con o sin dolor, para esos escenario se debe realizar un seguimieto periodico más minucioso de los incidentes de migraña en el paciente.</li>
+</ul>
+
+Resaltar que con o sin dolor el paciente necesita medicación y las dosis debe ser indicadas por su medico especialista.
+
+## Pacientes con dolor sin Aura
+
+```{r}
+# Filtrar solo los datos que presentan directamente el dolor sin Aura
+df_sin_aura <- bd_mcabeza %>%
+  filter(hatype == "No Aura")
+```
+
+pacientes que presentan dolor sin Aura.
+
+```{r}
+# Dosis de pacientes por edad que tienen dolor directo sin tener Aura
+ggplot(df_sin_aura, aes(x = age, y =dos, color=headache)) +
+  geom_smooth() +  
+ # geom_point() +  # Puntos 
+  labs(title = "...",
+       x = "Edad",
+       y = "Dosis") + 
+  scale_color_manual(values = c("yes" = "red", "no" = "#00CED1")) 
+```
+
+Del gráfico podemos concluir:
+
+
+## Pacientes con Mixed Aura
+
+## Referencias
+
+1.- Migraine headache (MH) classification using machine learning methods with data augmentation <br/>
+https://www.nature.com/articles/s41598-024-55874-0
+
+2.- ¿Por qué las mujeres tienen más y peores migrañas que los hombres?<br/>
+https://www.bbc.com/mundo/articles/cy6y625ljz9o
+
+3.- Nuevas pistas sobre por qué las mujeres sufran más migrañas <br/>
+https://neurologia.com/noticia/6891/nuevas-pistas-sobre-por-que-las-mujeres-sufran-mas-migranas-que-los-hombres
